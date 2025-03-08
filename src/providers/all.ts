@@ -15,16 +15,17 @@ import { webtorScraper } from './sources/webtor';
 export function gatherAllSources(): Array<Sourcerer> {
   // all sources are gathered here
   return [
-    insertunitScraper,
-    uiraLiveScraper,
-    embedSuScraper,
-    vidsrcSuScraper,
-    ee3Scraper,
     mp4HydraScraper,
-    webtorScraper,
-    orionScraper,
-    astraScraper,
+    insertunitScraper,
     vidsrcScraper,
+    astraScraper,
+    orionScraper,
+    webtorScraper,
+    ee3Scraper,
+    vidsrcSuScraper,
+    embedSuScraper,
+    uiraLiveScraper,
+    vidapiClickScraper
   ];
 }
 
