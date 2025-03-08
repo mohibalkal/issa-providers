@@ -1,5 +1,5 @@
 {
-  "name": "kal-providers",
+  "name": "issa-providers",
   "version": "2.3.4",
   "description": "Package that contains all the providers of movie-web",
   "type": "module",
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mohibalkal/kal-providers.git"
+    "url": "git+https://github.com/mohibalkal/issa-providers.git"
   },
   "keywords": [
     "movie-web",
@@ -31,9 +31,9 @@
   "author": "AmanG",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mohibalkal/kal-providers"
+    "url": "https://github.com/mohibalkal/issa-providers"
   },
-  "homepage": "https://github.com/mohibalkal/kal-providers",
+  "homepage": "https://github.com/mohibalkal/issa-providers",
   "scripts": {
     "build": "vite build && tsc --noEmit",
     "cli": "vite-node ./src/dev-cli/index.ts",
