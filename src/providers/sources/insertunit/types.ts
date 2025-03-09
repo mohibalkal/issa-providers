@@ -1,6 +1,8 @@
 export interface Subtitle {
   url: string;
   name: string;
+  label?: string;
+  lang?: string;
 }
 
 export interface Episode {
@@ -21,6 +23,8 @@ export interface Episode {
   preview: {
     src: string;
   };
+  server?: string;
+  hash?: string;
 }
 
 export interface Season {
@@ -31,7 +35,10 @@ export interface Season {
 
 export interface InsertUnitResponse {
   status: string;
+  message?: string;
   result: {
     seasons: Season[];
+    server?: string;
+    hash?: string;
   };
 }

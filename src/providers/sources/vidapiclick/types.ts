@@ -18,8 +18,23 @@ export interface VidApiClickStream {
   type?: string;
 }
 
+export interface VidApiClickSource {
+  file: string;
+  label?: string;
+  type?: string;
+}
+
+export interface VidApiClickSubtitle {
+  file: string;
+  label: string;
+  kind: string;
+}
+
 export interface VidApiClickResponse {
-  streams: VidApiClickStream[];
-  success?: boolean;
+  success: boolean;
+  data?: {
+    sources: VidApiClickSource[];
+    tracks?: VidApiClickSubtitle[];
+  };
   message?: string;
 }

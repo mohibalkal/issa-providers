@@ -1,6 +1,7 @@
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
 
 export const baseUrl = 'https://webtor.io';
+export const apiUrl = 'https://api.webtor.io/v1';
 
 export function buildSearchQuery(ctx: MovieScrapeContext | ShowScrapeContext): string {
   if (ctx.media.type === 'movie') {
@@ -11,23 +12,35 @@ export function buildSearchQuery(ctx: MovieScrapeContext | ShowScrapeContext): s
 
 export const headers = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-  'Accept': 'application/json',
+  'Accept': 'application/json, text/plain, */*',
   'Accept-Language': 'en-US,en;q=0.9',
-  'Connection': 'keep-alive',
-  'Sec-Fetch-Dest': 'empty',
-  'Sec-Fetch-Mode': 'cors',
-  'Sec-Fetch-Site': 'same-origin',
-  'Pragma': 'no-cache',
-  'Cache-Control': 'no-cache',
-  'Content-Type': 'application/json'
+  'Content-Type': 'application/json',
+  'X-Requested-With': 'XMLHttpRequest',
+  'Origin': baseUrl,
+  'Referer': baseUrl
 };
 
 export function buildStreamUrl(ctx: MovieScrapeContext | ShowScrapeContext): string {
-  let url = `${baseUrl}/api/stream/${ctx.media.type}/${ctx.media.tmdbId}`;
-  if (ctx.media.type === 'show') {
-    url += `/season/${ctx.media.season.number}/episode/${ctx.media.episode.number}`;
+  const tmdbId = ctx.media.tmdbId;
+  const type = ctx.media.type;
+
+  if (type === 'movie') {
+    return `${apiUrl}/movies/${tmdbId}/magnet`;
   }
-  return url;
+
+  if (type === 'show') {
+    return `${apiUrl}/shows/${tmdbId}/season/${ctx.media.season.number}/episode/${ctx.media.episode.number}/magnet`;
+  }
+
+  throw new Error('Invalid media type');
+}
+
+export function buildTorrentUrl(infoHash: string): string {
+  return `${apiUrl}/torrents/${infoHash}`;
+}
+
+export function buildFileUrl(infoHash: string, filePath: string): string {
+  return `${apiUrl}/torrents/${infoHash}/files/${encodeURIComponent(filePath)}`;
 }
 
 export function formatQuality(size?: string): string {

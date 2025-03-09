@@ -2,7 +2,7 @@ import { flags } from '@/entrypoint/utils/targets';
 import { makeSourcerer } from '@/providers/base';
 import { getStreamUrl } from './scrape';
 
-export const vidApiClickScraper = makeSourcerer({
+export const vidapiclick = makeSourcerer({
   id: 'vidapiclick',
   name: 'VidApiClick',
   rank: 180,

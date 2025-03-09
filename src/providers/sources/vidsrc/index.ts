@@ -4,7 +4,9 @@ import { SourcererOutput, makeSourcerer } from '@/providers/base';
 import { Caption } from '@/providers/captions';
 import { Stream } from '@/providers/streams';
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
-import { getStreamUrl as getStreamUrlFromScrape } from './scrape';
+import { getStreamUrl } from './scrape';
+
+const BASE_URL = 'https://vidsrc.me';
 
 interface VidSrcResponse {
   status: boolean;
@@ -22,6 +24,20 @@ interface VidSrcResponse {
   };
 }
 
+const headers = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+  'Accept': 'application/json, text/plain, */*',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Origin': BASE_URL,
+  'Referer': BASE_URL,
+  'Sec-Fetch-Dest': 'empty',
+  'Sec-Fetch-Mode': 'cors',
+  'Sec-Fetch-Site': 'same-origin',
+  'Connection': 'keep-alive',
+  'Pragma': 'no-cache',
+  'Cache-Control': 'no-cache'
+};
+
 async function getVidSrcStream(
   fetcher: UseableFetcher,
   tmdbId: string,
@@ -32,18 +48,15 @@ async function getVidSrcStream(
   // Create the API URL
   let url;
   if (type === 'movie') {
-    url = `https://vidsrc.to/embed/movie/${tmdbId}`;
+    url = `${BASE_URL}/embed/movie/${tmdbId}`;
   } else {
-    url = `https://vidsrc.to/embed/tv/${tmdbId}/${season}/${episode}`;
+    url = `${BASE_URL}/embed/tv/${tmdbId}/${season}/${episode}`;
   }
 
   // Make the API request
   const data = await fetcher<VidSrcResponse>(url, {
     method: 'GET',
-    headers: {
-      'User-Agent': 'Mozilla/5.0',
-      Referer: 'https://vidsrc.me/',
-    },
+    headers
   });
 
   if (!data.status || !data.result?.sources?.length) {
@@ -75,10 +88,11 @@ async function getVidSrcStream(
         playlist: stream.url,
         flags: [flags.CORS_ALLOWED],
         captions,
+        preferredHeaders: headers,
         headers: {
-          Referer: 'https://vidsrc.me/',
-          'User-Agent': 'Mozilla/5.0',
-        },
+          ...headers,
+          'Referer': BASE_URL
+        }
       };
     }
 
@@ -93,10 +107,11 @@ async function getVidSrcStream(
       },
       flags: [flags.CORS_ALLOWED],
       captions,
+      preferredHeaders: headers,
       headers: {
-        Referer: 'https://vidsrc.me/',
-        'User-Agent': 'Mozilla/5.0',
-      },
+        ...headers,
+        'Referer': BASE_URL
+      }
     };
   });
 }
@@ -107,6 +122,6 @@ export const vidsrcScraper = makeSourcerer({
   rank: 210,
   flags: [flags.CORS_ALLOWED],
   disabled: false,
-  scrapeMovie: getStreamUrlFromScrape,
-  scrapeShow: getStreamUrlFromScrape,
+  scrapeMovie: getStreamUrl,
+  scrapeShow: getStreamUrl,
 });

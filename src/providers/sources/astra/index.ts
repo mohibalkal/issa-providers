@@ -5,7 +5,7 @@ import { getStreamUrl } from './scrape';
 export const astraScraper = makeSourcerer({
   id: 'astra',
   name: 'Astra',
-  rank: 710,
+  rank: 180,
   flags: [flags.CORS_ALLOWED],
   disabled: false,
   scrapeMovie: getStreamUrl,

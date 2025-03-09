@@ -2,36 +2,42 @@ import { Caption } from '@/providers/captions';
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
 import { NotFoundError } from '@/utils/errors';
 import { flags } from '@/entrypoint/utils/targets';
-import { InsertUnitResponse } from './types';
+import { InsertUnitResponse, Season } from './types';
 import { buildStreamUrl, headers, baseUrl } from './utils';
 import { Stream } from '@/providers/streams';
 import { SourcererOutput } from '@/providers/base';
 
 import { getCaptions } from './captions';
-import { Season } from './types';
 
 export const insertUnitBase = 'https://insertunit.com/';
 
-async function parseShowData(data: string) {
+async function parseShowData(data: string): Promise<Season[]> {
+  console.log('[InsertUnit] Parsing show data');
   const seasonDataJSONregex = /seasons\s*:\s*(\[[^\]]*\])/;
   const seasonData = seasonDataJSONregex.exec(data);
 
   if (!seasonData?.[1]) {
+    console.error('[InsertUnit] No seasons data found in response');
     throw new NotFoundError('No seasons data found');
   }
 
   try {
-    return JSON.parse(seasonData[1].replace(/'/g, '"')) as Season[];
+    const seasons = JSON.parse(seasonData[1].replace(/'/g, '"')) as Season[];
+    console.log(`[InsertUnit] Found ${seasons.length} seasons`);
+    return seasons;
   } catch (error) {
+    console.error('[InsertUnit] Error parsing seasons data:', error);
     throw new NotFoundError('Invalid seasons data');
   }
 }
 
-async function parseMovieData(data: string) {
+async function parseMovieData(data: string): Promise<{ stream: string; captions: Caption[] }> {
+  console.log('[InsertUnit] Parsing movie data');
   const streamRegex = /hls\s*:\s*"([^"]*)"/;
   const streamData = streamRegex.exec(data);
 
   if (!streamData?.[1]) {
+    console.error('[InsertUnit] No stream data found in response');
     throw new NotFoundError('No stream data found');
   }
 
@@ -44,8 +50,9 @@ async function parseMovieData(data: string) {
     try {
       const subtitleData = JSON.parse(subtitleJSONData[1].replace(/'/g, '"'));
       captions = await getCaptions(subtitleData);
+      console.log(`[InsertUnit] Found ${captions.length} captions`);
     } catch (error) {
-      console.warn('Failed to parse captions:', error);
+      console.warn('[InsertUnit] Failed to parse captions:', error);
     }
   }
 
@@ -55,12 +62,14 @@ async function parseMovieData(data: string) {
   };
 }
 
-export async function scrapeInsertUnitShow(ctx: ShowScrapeContext) {
+export async function scrapeInsertUnitShow(ctx: ShowScrapeContext): Promise<SourcererOutput> {
   try {
-    const playerData = await ctx.proxiedFetcher<string>(`/api/embed/imdb/${ctx.media.imdbId}`, {
-      baseUrl: insertUnitBase,
+    console.log(`[InsertUnit] Starting show scraping for TMDB ID: ${ctx.media.tmdbId}`);
+    const url = buildStreamUrl(ctx);
+    const playerData = await ctx.proxiedFetcher<string>(url, {
       headers: {
-        'Referer': insertUnitBase
+        ...headers,
+        'Referer': baseUrl
       }
     });
     ctx.progress(30);
@@ -73,6 +82,7 @@ export async function scrapeInsertUnitShow(ctx: ShowScrapeContext) {
     );
 
     if (!currentSeason) {
+      console.error('[InsertUnit] Season not found or blocked');
       throw new NotFoundError('Season not found');
     }
 
@@ -81,6 +91,7 @@ export async function scrapeInsertUnitShow(ctx: ShowScrapeContext) {
     );
 
     if (!currentEpisode?.hls) {
+      console.error('[InsertUnit] Episode not found or no HLS stream available');
       throw new NotFoundError('Episode not found');
     }
 
@@ -88,12 +99,14 @@ export async function scrapeInsertUnitShow(ctx: ShowScrapeContext) {
     if (currentEpisode.cc) {
       try {
         captions = await getCaptions(currentEpisode.cc);
+        console.log(`[InsertUnit] Found ${captions.length} captions for episode`);
       } catch (error) {
-        console.warn('Failed to get captions:', error);
+        console.warn('[InsertUnit] Failed to get captions:', error);
       }
     }
 
     ctx.progress(95);
+    console.log('[InsertUnit] Successfully extracted show stream');
 
     return {
       embeds: [],
@@ -104,27 +117,39 @@ export async function scrapeInsertUnitShow(ctx: ShowScrapeContext) {
           type: 'hls' as const,
           flags: [flags.CORS_ALLOWED],
           captions,
+          preferredHeaders: {
+            'Origin': baseUrl,
+            'Referer': baseUrl
+          },
+          headers: {
+            ...headers,
+            'Referer': baseUrl
+          }
         },
       ],
     };
   } catch (error) {
+    console.error('[InsertUnit] Error in scrapeInsertUnitShow:', error);
     if (error instanceof NotFoundError) throw error;
     throw new NotFoundError('Failed to scrape show');
   }
 }
 
-export async function scrapeInsertUnitMovie(ctx: MovieScrapeContext) {
+export async function scrapeInsertUnitMovie(ctx: MovieScrapeContext): Promise<SourcererOutput> {
   try {
-    const playerData = await ctx.proxiedFetcher<string>(`/api/embed/imdb/${ctx.media.imdbId}`, {
-      baseUrl: insertUnitBase,
+    console.log(`[InsertUnit] Starting movie scraping for TMDB ID: ${ctx.media.tmdbId}`);
+    const url = buildStreamUrl(ctx);
+    const playerData = await ctx.proxiedFetcher<string>(url, {
       headers: {
-        'Referer': insertUnitBase
+        ...headers,
+        'Referer': baseUrl
       }
     });
     ctx.progress(35);
 
     const { stream, captions } = await parseMovieData(playerData);
     ctx.progress(90);
+    console.log('[InsertUnit] Successfully extracted movie stream');
 
     return {
       embeds: [],
@@ -135,10 +160,19 @@ export async function scrapeInsertUnitMovie(ctx: MovieScrapeContext) {
           playlist: stream,
           flags: [flags.CORS_ALLOWED],
           captions,
+          preferredHeaders: {
+            'Origin': baseUrl,
+            'Referer': baseUrl
+          },
+          headers: {
+            ...headers,
+            'Referer': baseUrl
+          }
         },
       ],
     };
   } catch (error) {
+    console.error('[InsertUnit] Error in scrapeInsertUnitMovie:', error);
     if (error instanceof NotFoundError) throw error;
     throw new NotFoundError('Failed to scrape movie');
   }

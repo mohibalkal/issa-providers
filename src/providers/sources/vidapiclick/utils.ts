@@ -1,24 +1,29 @@
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
 
-export const baseUrl = 'https://vidapi.click';
-
-export function buildStreamUrl(ctx: MovieScrapeContext | ShowScrapeContext): string {
-  let url = `${baseUrl}/api/source/${ctx.media.type}/${ctx.media.tmdbId}`;
-  if (ctx.media.type === 'show') {
-    url += `/season/${ctx.media.season.number}/episode/${ctx.media.episode.number}`;
-  }
-  return url;
-}
+export const baseUrl = 'https://vidapiclick.com';
 
 export const headers = {
   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-  'Accept': 'application/json',
+  'Accept': 'application/json, text/plain, */*',
   'Accept-Language': 'en-US,en;q=0.9',
-  'Connection': 'keep-alive',
-  'Sec-Fetch-Dest': 'empty',
-  'Sec-Fetch-Mode': 'cors',
+  'Content-Type': 'application/json',
+  'X-Requested-With': 'XMLHttpRequest',
   'Sec-Fetch-Site': 'same-origin',
-  'Pragma': 'no-cache',
-  'Cache-Control': 'no-cache',
-  'Content-Type': 'application/json'
+  'Sec-Fetch-Mode': 'cors',
+  'Sec-Fetch-Dest': 'empty'
 };
+
+export function buildStreamUrl(ctx: MovieScrapeContext | ShowScrapeContext): string {
+  const baseApiUrl = `${baseUrl}/api/source`;
+  const tmdbId = ctx.media.tmdbId;
+
+  if (ctx.media.type === 'movie') {
+    return `${baseApiUrl}/movie/${tmdbId}`;
+  }
+
+  if (ctx.media.type === 'show') {
+    return `${baseApiUrl}/tv/${tmdbId}/${ctx.media.season.number}/${ctx.media.episode.number}`;
+  }
+
+  throw new Error('Invalid media type');
+}
