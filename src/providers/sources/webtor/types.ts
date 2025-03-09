@@ -10,3 +10,11 @@ export interface WebtorResponse {
   title?: string;
   hash?: string;
 }
+
+export interface WebtorSearchResponse {
+  magnets: string[];
+}
+
+export interface WebtorStreamResponse {
+  streamUrl: string;
+}

@@ -5,8 +5,9 @@ import { getStreamUrl } from './scrape';
 export const mp4HydraScraper = makeSourcerer({
   id: 'mp4hydra',
   name: 'Mp4Hydra',
-  rank: 3,
+  rank: 300,
   flags: [flags.CORS_ALLOWED],
+  disabled: false,
   scrapeMovie: getStreamUrl,
   scrapeShow: getStreamUrl,
 });

@@ -1,7 +1,7 @@
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
 import { NotFoundError } from '@/utils/errors';
 import { flags } from '@/entrypoint/utils/targets';
-import { VidApiClickResponse } from './types';
+import { AstraResponse } from './types';
 import { buildStreamUrl, headers, baseUrl } from './utils';
 import { Stream } from '@/providers/streams';
 import { SourcererOutput } from '@/providers/base';
@@ -9,19 +9,16 @@ import { SourcererOutput } from '@/providers/base';
 export async function getStreamUrl(ctx: MovieScrapeContext | ShowScrapeContext): Promise<SourcererOutput> {
   try {
     const url = buildStreamUrl(ctx);
-    const data = await ctx.proxiedFetcher<VidApiClickResponse>(url, { 
-      headers,
-      method: 'GET'
-    });
+    const data = await ctx.proxiedFetcher<AstraResponse>(url, { headers });
 
-    if (!data?.success || !data?.streams?.length) {
+    if (!data?.streams?.length) {
       throw new NotFoundError('No streams found');
     }
 
     // إنشاء الروابط لكل جودة
     const streams = data.streams.map((stream, index) => {
       const baseStream = {
-        id: `vidapiclick_${ctx.media.tmdbId}_${index}`,
+        id: `astra_${ctx.media.tmdbId}_${index}`,
         flags: [flags.CORS_ALLOWED],
         captions: [],
         preferredHeaders: {
@@ -36,7 +33,7 @@ export async function getStreamUrl(ctx: MovieScrapeContext | ShowScrapeContext):
       return {
         ...baseStream,
         type: 'hls' as const,
-        playlist: stream.file
+        playlist: stream.url
       };
     });
 
@@ -58,4 +55,4 @@ export async function getStreamUrl(ctx: MovieScrapeContext | ShowScrapeContext):
     if (error instanceof NotFoundError) throw error;
     throw new NotFoundError('Failed to fetch streams');
   }
-}
+} 

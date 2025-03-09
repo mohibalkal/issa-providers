@@ -4,6 +4,7 @@ import { SourcererOutput, makeSourcerer } from '@/providers/base';
 import { Caption } from '@/providers/captions';
 import { Stream } from '@/providers/streams';
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
+import { getStreamUrl as getStreamUrlFromScrape } from './scrape';
 
 interface VidSrcResponse {
   status: boolean;
@@ -21,7 +22,7 @@ interface VidSrcResponse {
   };
 }
 
-async function getStreamUrl(
+async function getVidSrcStream(
   fetcher: UseableFetcher,
   tmdbId: string,
   type: 'movie' | 'show',
@@ -70,7 +71,7 @@ async function getStreamUrl(
     if (isHLS) {
       return {
         id: `vidsrc_${tmdbId}_${index}`,
-        type: 'hls',
+        type: 'hls' as const,
         playlist: stream.url,
         flags: [flags.CORS_ALLOWED],
         captions,
@@ -78,15 +79,15 @@ async function getStreamUrl(
           Referer: 'https://vidsrc.me/',
           'User-Agent': 'Mozilla/5.0',
         },
-      } as Stream;
+      };
     }
 
     return {
       id: `vidsrc_${tmdbId}_${index}`,
-      type: 'file',
+      type: 'file' as const,
       qualities: {
         [stream.quality]: {
-          type: 'mp4',
+          type: 'mp4' as const,
           url: stream.url,
         },
       },
@@ -96,7 +97,7 @@ async function getStreamUrl(
         Referer: 'https://vidsrc.me/',
         'User-Agent': 'Mozilla/5.0',
       },
-    } as Stream;
+    };
   });
 }
 
@@ -105,35 +106,7 @@ export const vidsrcScraper = makeSourcerer({
   name: 'VidSrc',
   rank: 210,
   flags: [flags.CORS_ALLOWED],
-  async scrapeMovie(input: MovieScrapeContext): Promise<SourcererOutput> {
-    const { media, fetcher } = input;
-
-    try {
-      const streams = await getStreamUrl(fetcher, media.tmdbId, 'movie');
-
-      return {
-        embeds: [],
-        stream: streams,
-      };
-    } catch (error) {
-      console.error('Error scraping vidsrc:', error);
-      return { embeds: [], stream: [] };
-    }
-  },
-
-  async scrapeShow(input: ShowScrapeContext): Promise<SourcererOutput> {
-    const { media, fetcher } = input;
-
-    try {
-      const streams = await getStreamUrl(fetcher, media.tmdbId, 'show', media.season.number, media.episode.number);
-
-      return {
-        embeds: [],
-        stream: streams,
-      };
-    } catch (error) {
-      console.error('Error scraping vidsrc:', error);
-      return { embeds: [], stream: [] };
-    }
-  },
+  disabled: false,
+  scrapeMovie: getStreamUrlFromScrape,
+  scrapeShow: getStreamUrlFromScrape,
 });

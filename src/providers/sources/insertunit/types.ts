@@ -28,3 +28,10 @@ export interface Season {
   blocked: boolean;
   episodes: Episode[];
 }
+
+export interface InsertUnitResponse {
+  status: string;
+  result: {
+    seasons: Season[];
+  };
+}

@@ -1,6 +1,6 @@
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
 
-export const baseUrl = 'https://vidapi.click';
+export const baseUrl = 'https://vidsrc.me';
 
 export function buildStreamUrl(ctx: MovieScrapeContext | ShowScrapeContext): string {
   let url = `${baseUrl}/api/source/${ctx.media.type}/${ctx.media.tmdbId}`;
@@ -21,4 +21,4 @@ export const headers = {
   'Pragma': 'no-cache',
   'Cache-Control': 'no-cache',
   'Content-Type': 'application/json'
-};
+}; 

@@ -1,7 +1,7 @@
 import { Embed, Sourcerer } from '@/providers/base';
 import { insertunitScraper } from '@/providers/sources/insertunit';
 import { uiraLiveScraper } from '@/providers/sources/uiralive';
-import { vidapiClickScraper } from '@/providers/sources/vidapiclick';
+import { vidApiClickScraper } from '@/providers/sources/vidapiclick';
 
 import { astraScraper } from './sources/astra';
 import { ee3Scraper } from './sources/ee3';
@@ -25,7 +25,7 @@ export function gatherAllSources(): Array<Sourcerer> {
     vidsrcSuScraper,
     embedSuScraper,
     uiraLiveScraper,
-    vidapiClickScraper
+    vidApiClickScraper
   ];
 }
 

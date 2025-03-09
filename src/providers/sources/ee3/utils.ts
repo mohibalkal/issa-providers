@@ -1,9 +1,9 @@
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
 
-export const baseUrl = 'https://vidapi.click';
+export const baseUrl = 'https://ee3.me';
 
 export function buildStreamUrl(ctx: MovieScrapeContext | ShowScrapeContext): string {
-  let url = `${baseUrl}/api/source/${ctx.media.type}/${ctx.media.tmdbId}`;
+  let url = `${baseUrl}/api/media/${ctx.media.type}/${ctx.media.tmdbId}`;
   if (ctx.media.type === 'show') {
     url += `/season/${ctx.media.season.number}/episode/${ctx.media.episode.number}`;
   }
@@ -19,6 +19,5 @@ export const headers = {
   'Sec-Fetch-Mode': 'cors',
   'Sec-Fetch-Site': 'same-origin',
   'Pragma': 'no-cache',
-  'Cache-Control': 'no-cache',
-  'Content-Type': 'application/json'
-};
+  'Cache-Control': 'no-cache'
+}; 

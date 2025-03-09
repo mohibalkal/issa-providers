@@ -11,3 +11,15 @@ export interface VidapiResponse {
     lang: string;
   }[];
 }
+
+export interface VidApiClickStream {
+  file: string;
+  label?: string;
+  type?: string;
+}
+
+export interface VidApiClickResponse {
+  streams: VidApiClickStream[];
+  success?: boolean;
+  message?: string;
+}
